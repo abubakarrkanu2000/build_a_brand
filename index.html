@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Build a Brand — Creative Agency</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=Bebas+Neue&family=Cormorant+Garamond:ital,wght@0,300;0,600;1,300;1,600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root {
     --black: #0a0a0a;
@@ -1479,16 +1480,16 @@
       <div class="form-row">
         <div class="form-field">
           <label>Your Name</label>
-          <input type="text" placeholder="John Doe">
+          <input id="contact-name" type="text" placeholder="John Doe">
         </div>
         <div class="form-field">
           <label>Email</label>
-          <input type="email" placeholder="you@email.com">
+          <input id="contact-email" type="email" placeholder="you@email.com">
         </div>
       </div>
       <div class="form-field">
         <label>Service Needed</label>
-        <select>
+        <select id="contact-service">
           <option value="">Select a service...</option>
           <option>Graphic Design</option>
           <option>Web &amp; Digital</option>
@@ -1499,9 +1500,9 @@
       </div>
       <div class="form-field">
         <label>Tell us about your project</label>
-        <textarea placeholder="Describe your brand, goals, and what you need..."></textarea>
+        <textarea id="contact-message" placeholder="Describe your brand, goals, and what you need..."></textarea>
       </div>
-      <button class="submit-btn">Send Message →</button>
+      <button class="submit-btn" id="submit-btn">Send Message →</button>
     </div>
   </div>
 </section>
@@ -1683,6 +1684,52 @@
     if (Math.abs(diff) > 50) goTo(diff > 0 ? galIndex + 1 : galIndex - 1);
   });
   // ─────────────────────────────────────────────
+
+  // ─────────────────────────────────────────────
+
+  // ── SUPABASE CONTACT FORM ─────────────────────
+  const { createClient } = supabase;
+  const db = createClient(
+    'https://hmversersyjzlvijwcmg.supabase.co',
+    'sb_publishable_UMCYavMjB9V88Wp9JA7ijg_vQXC9Y8r'
+  );
+
+  document.getElementById('submit-btn').addEventListener('click', async () => {
+    const name    = document.getElementById('contact-name').value.trim();
+    const email   = document.getElementById('contact-email').value.trim();
+    const service = document.getElementById('contact-service').value;
+    const message = document.getElementById('contact-message').value.trim();
+    const btn     = document.getElementById('submit-btn');
+
+    if (!name || !email || !message) {
+      alert('Please fill in your name, email, and message.');
+      return;
+    }
+
+    btn.textContent = 'Sending…';
+    btn.disabled = true;
+
+    const { error } = await db.from('contact_submissions').insert([
+      { name, email, service, message }
+    ]);
+
+    if (error) {
+      console.error(error);
+      btn.textContent = 'Failed — try again';
+      btn.disabled = false;
+    } else {
+      btn.textContent = '✓ Message Sent!';
+      document.getElementById('contact-name').value = '';
+      document.getElementById('contact-email').value = '';
+      document.getElementById('contact-service').value = '';
+      document.getElementById('contact-message').value = '';
+      setTimeout(() => {
+        btn.textContent = 'Send Message →';
+        btn.disabled = false;
+      }, 3000);
+    }
+  });
+  // ──────────────────────────────────────────────
 </script>
 </body>
 </html>
