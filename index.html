@@ -6,6 +6,7 @@
 <title>Build a Brand — Creative Agency</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=Bebas+Neue&family=Cormorant+Garamond:ital,wght@0,300;0,600;1,300;1,600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
   :root {
     --black: #0a0a0a;
@@ -1694,6 +1695,9 @@
     'sb_publishable_UMCYavMjB9V88Wp9JA7ijg_vQXC9Y8r'
   );
 
+  // Init EmailJS
+  emailjs.init('QGJk3T3-fq7gwZHSAp0Lc');
+
   document.getElementById('submit-btn').addEventListener('click', async () => {
     const name    = document.getElementById('contact-name').value.trim();
     const email   = document.getElementById('contact-email').value.trim();
@@ -1709,9 +1713,18 @@
     btn.textContent = 'Sending…';
     btn.disabled = true;
 
+    // Save to Supabase
     const { error } = await db.from('contact_submissions').insert([
       { name, email, service, message }
     ]);
+
+    // Send email via EmailJS
+    await emailjs.send('service_vh5oywl', 'template_p7n5nvx', {
+      from_name: name,
+      from_email: email,
+      service: service,
+      message: message
+    });
 
     if (error) {
       console.error(error);
